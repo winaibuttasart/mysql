@@ -1,48 +1,63 @@
+const PORT = process.env.PORT || 5000
+const express = require('express')
+const bodyParser = require('body-parser')
+const mysql = require('mysql')
+const path = require('path')
+let app = express();
 
-var mysql = require('mysql')
+app.use(bodyParser.urlencoded({
+      extended: true
+}));
+app.use(bodyParser.json());
+// app.use(express.static(path.join(__dirname, 'public')));
 
-var con = mysql.createConnection({
-   host : "localhost",
-   user : "root",
-   password : "dev2018_pass",
-   database : "pos"
+let con = mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      password: "",
+      database: "test"
 })
 
-con.connect(function(err) {
-      if(err) throw err
-      console.log("Connected!")
-      let a = "insert into test_pos(NAME) values ('nai')"
-   //     let a = "select * from test_pos"
-        con.query(a,function(err,result,fields) {
-        if(err) throw err
-        console.log(result)
+function Insert(n) {
+      let conn = con.connect(function (err) {
+            if (err) {
+                  throw err
+            } else {
+                  console.log("Connected!")
+                  let sql = `insert into test_pos(NAME) values ("${n}")`
+                  con.query(sql, function (err) {
+                        if (err) {
+                              console.log('Error insert name');
+                              throw err
+                        }
+                        console.log("Insert name Success")
+                  })
+            }
       })
+}
+
+
+app.get('/', function (req, res) {
+      res.sendFile(path.join(__dirname + '/main.html'))
+});
+
+app.post('/save', function (req, res) {
+      let path1 = req.path;
+      console.log('path : ' + path1);
+      let body = req.body;
+      console.log('body : ', body);
+      let username = body.username
+      console.log('username : ', username);
+      Insert(username)
+
+      res.send(body);
 
 })
 
 
+app.get('*', function (req, res) {
+      res.sendFile(path.join(__dirname + '/notFound.html'))
+});
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.listen(PORT, () => console.log(`Node app running on port ${PORT}`))
